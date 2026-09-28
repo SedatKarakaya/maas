@@ -197,7 +197,7 @@ function calc(){
   const yatPct=resolveExp(Y,M,'yat').val;
   const netNakit=nakit-totalExp;
   const yat=Math.max(0,netNakit)*yatPct/100;
-  const total=netNakit+yemek+fuel;
+  const total=nakit+yemek+fuel;
   return{R,yemek,fuel,nakit,netNakit,totalExp,yatPct,yat,total,otH,meal,wd,ab,izin,rap,hd,hr,ik,meals:meal,yemRate:P.yem}}
 function render(){
   $('#mt').textContent=MN[M]+' '+Y;
@@ -215,7 +215,6 @@ function render(){
   $('#cal').querySelectorAll('.c[data-k]').forEach(b=>b.onclick=()=>{sel=b.dataset.k;render();$('#day').scrollIntoView({behavior:'smooth',block:'nearest'})});
   $('#tb').innerHTML=c.R.filter(r=>r[1]).map(r=>`<tr><td>${r[0]}<small>${r[3]}</small></td><td class="${r[2]>0?'p':'m'}">${r[2]>0?'':'-'}${TRY(r[1])}</td></tr>`).join('')
    +(c.yemek>0?`<tr><td>Yemek kartı<small>${c.meal} gün x ${TRY(c.yemRate)}</small></td><td class="p">${TRY(c.yemek)}</td></tr>`:'')
-   +(c.totalExp>0?`<tr><td>Giderler<small>Bu ayki toplam gider</small></td><td class="m">-${TRY(c.totalExp)}</td></tr>`:'')
    +`<tr class="tot"><td>Toplam</td><td>${TRY(c.total)}</td></tr>`;
   dayPanel();cmpRender();histRender();expRender()}
 function dayPanel(){
@@ -302,7 +301,7 @@ function pdfSummary(){const c=calc(),n=new Date(Y,M+1,0).getDate();let rows='';
   for(let d=1;d<=n;d++){const i=info(Y,M,d),e=D[i.key];if(e&&+e.h>0)rows+=`<tr><td>${d} ${MN[M]}, ${DN[i.dow]}</td><td>${i.hol||''}</td><td>${e.a?e.a+' – '+e.b:''}</td><td>${e.h} sa</td></tr>`}
   const expRows=[...EXP_SINGLES,...EXP_BILLS,...EXP_COMM].map(([id,l])=>({l,...resolveExp(Y,M,id)})).filter(x=>x.val>0);
   $('#pr').innerHTML=`<h1>${MN[M]} ${Y} maaş ve mesai özeti</h1><div>Toplam kazanç: <b>${TRY(c.total)}</b> &nbsp; Banka hesabı: <b>${TRY(c.netNakit)}</b>${c.yemek>0?' &nbsp; Yemek kartı: <b>'+TRY(c.yemek)+'</b>':''}</div>
-  <h2>Bordro dökümü</h2><table>${c.R.filter(r=>r[1]).map(r=>`<tr><td>${r[0]}<small> ${r[3]}</small></td><td>${r[2]>0?'':'-'}${TRY(r[1])}</td></tr>`).join('')}${c.yemek>0?`<tr><td>Yemek kartı<small> ${c.meal} gün</small></td><td>${TRY(c.yemek)}</td></tr>`:''}${c.totalExp>0?`<tr><td>Giderler</td><td>-${TRY(c.totalExp)}</td></tr>`:''}<tr class="tot"><td>Toplam</td><td>${TRY(c.total)}</td></tr></table>
+  <h2>Bordro dökümü</h2><table>${c.R.filter(r=>r[1]).map(r=>`<tr><td>${r[0]}<small> ${r[3]}</small></td><td>${r[2]>0?'':'-'}${TRY(r[1])}</td></tr>`).join('')}${c.yemek>0?`<tr><td>Yemek kartı<small> ${c.meal} gün</small></td><td>${TRY(c.yemek)}</td></tr>`:''}<tr class="tot"><td>Toplam</td><td>${TRY(c.total)}</td></tr></table>
   <h2>Fazla mesai günleri (${c.otH} saat)</h2>${rows?`<table><tr><th>Gün</th><th>Tatil</th><th>Saat aralığı</th><th>Süre</th></tr>${rows}</table>`:'<div>Bu ay fazla mesai girişi yok.</div>'}
   <h2>Giderler</h2>${expRows.length?`<table>${expRows.map(x=>`<tr><td>${x.l}${x.inh?'<small> (varsayılan)</small>':''}</td><td>${TRY(x.val)}</td></tr>`).join('')}<tr class="tot"><td>Toplam gider</td><td>${TRY(c.totalExp)}</td></tr></table>`:'<div>Bu ay için gider girilmedi.</div>'}
   <h2>Yatırım planı</h2><div>%${c.yatPct} — <b>${TRY(c.yat)}</b></div>
