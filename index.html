@@ -73,6 +73,9 @@ details summary{cursor:pointer;font-weight:800;font-size:16px}
 .fs{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:12px}
 .fs label{display:block;font-size:12.5px;color:var(--mut);margin-bottom:3px}
 .note{font-size:12.5px;color:var(--mut);margin-top:10px}
+#cmt th{font-size:12px;color:var(--mut);text-align:right;font-weight:600;padding:4px}#cmt th:first-child{text-align:left}#cmt td{font-size:13.5px}#cmt td:nth-child(n+2){text-align:right;white-space:nowrap}
+#pr{display:none}
+@media print{html,body{background:#fff!important;color:#000!important}.blob,main{display:none!important}#pr{display:block;color:#000;font:13px/1.5 Manrope,system-ui,sans-serif;padding:8px}#pr h1{font-size:20px;margin:0 0 4px}#pr h2{font-size:15px;margin:18px 0 6px;color:#000}#pr table{width:100%}#pr td,#pr th{border-bottom:1px solid #ccc;padding:5px 4px;text-align:left}#pr td:last-child,#pr th:last-child{text-align:right}#pr small{color:#555}#pr .p,#pr .m{color:#000}#pr .tot td{font-size:15px;border-bottom:2px solid #000}}
 @media(prefers-reduced-motion:no-preference){.g{transition:box-shadow .2s}}
 </style>
 </head>
@@ -90,7 +93,8 @@ details summary{cursor:pointer;font-weight:800;font-size:16px}
       <section class="g day" id="day"></section>
     </div>
     <div style="display:grid;gap:14px">
-      <section class="g"><h2>Bordro dökümü</h2><table id="tb"></table></section>
+      <section class="g"><div class="top" style="margin-bottom:10px"><h2 style="margin:0">Bordro dökümü</h2><button class="btn" id="pdf">PDF özeti</button></div><table id="tb"></table></section>
+      <section class="g"><h2>Ay karşılaştırma</h2><div class="row"><label for="cm">Karşılaştır</label><input id="cm" type="month"></div><table id="cmt"></table></section>
       <section class="g"><details><summary>Ayarlar ve teklif değerleri</summary><div class="fs" id="fs"></div>
         <div class="row" style="margin-top:14px"><button class="btn" id="bk">Yedekle</button><button class="btn" id="rs">Geri yükle</button><input type="file" id="rf" accept=".json,application/json" hidden></div>
         <p class="note">Yedekle: ayarlar ve mesai girişlerini .json dosyası olarak indirir. Geri yükle: bu dosyayı okuyup mevcut verilerin yerine koyar. Uygulamayı silmeden önce yedek al.</p>
@@ -98,6 +102,7 @@ details summary{cursor:pointer;font-weight:800;font-size:16px}
     </div>
   </div>
 </main>
+<div id="pr"></div>
 <script>
 const $=s=>document.querySelector(s);
 const TRY=n=>new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY'}).format(n||0);
@@ -106,8 +111,8 @@ const DN=['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
 const HF={'01-01':'Yılbaşı','04-23':'23 Nisan','05-01':'1 Mayıs','05-19':'19 Mayıs','07-15':'15 Temmuz','08-30':'30 Ağustos','10-29':'29 Ekim'};
 const RB={2026:{'03-20':'Ramazan B.','03-21':'Ramazan B.','03-22':'Ramazan B.','05-27':'Kurban B.','05-28':'Kurban B.','05-29':'Kurban B.','05-30':'Kurban B.'},2027:{'03-09':'Ramazan B.','03-10':'Ramazan B.','03-11':'Ramazan B.','05-16':'Kurban B.','05-17':'Kurban B.','05-18':'Kurban B.','05-19':'Kurban B.'}};
 const AR={2026:{'03-19':'Arife','05-26':'Arife'},2027:{'03-08':'Arife','05-15':'Arife'}};
-const DEF={base:0,sey:0,tek:0,kid:0,egt:0,start:'2020-01-01',tekIk:1,pay:225,mWk:1.5,mSun:1.5,mHol:2,yem:0,en:0,oth:0,ded:0,otTax:0};
-const FLD=[['base','Aylık temel net ücret'],['sey','Seyyanen net (2026 sonuna kadar)'],['tek','Teknopark yan hak (aylık)'],['kid','Kıdem yılı (en fazla 10)'],['egt','Eğitim tazminatı %'],['tekIk','Teknopark ikramiye aylarında da (1/0)'],['pay','Saatlik ücret böleni'],['mWk','Hafta içi ve Cmt mesai katsayısı'],['mSun','Pazar katsayısı'],['mHol','Resmi tatil katsayısı'],['yem','Yemek kartı gün başı (yemekhane: 0)'],['en','Enerjik bölge saati (33,66 TL/sa)'],['oth','Diğer ek ödeme'],['ded','Diğer kesinti (avans, BES...)'],['otTax','Fazla mesai kesinti %']];
+const DEF={base:0,sey:0,tek:0,kid:0,egt:0,start:'2020-01-01',tekIk:1,pay:225,mWk:1.5,mSun:1.5,mHol:2,yem:0,en:0,oth:0,ded:0,otTax:0,rnd:0.5,br:0,shS:'08:00',shE:'17:00'};
+const FLD=[['base','Aylık temel net ücret'],['sey','Seyyanen net (2026 sonuna kadar)'],['tek','Teknopark yan hak (aylık)'],['kid','Kıdem yılı (en fazla 10)'],['egt','Eğitim tazminatı %'],['tekIk','Teknopark ikramiye aylarında da (1/0)'],['pay','Saatlik ücret böleni'],['mWk','Hafta içi ve Cmt mesai katsayısı'],['mSun','Pazar katsayısı'],['mHol','Resmi tatil katsayısı'],['yem','Yemek kartı gün başı (yemekhane: 0)'],['en','Enerjik bölge saati (33,66 TL/sa)'],['oth','Diğer ek ödeme'],['ded','Diğer kesinti (avans, BES...)'],['otTax','Fazla mesai kesinti %'],['rnd','Mesai yuvarlama adımı (saat, aşağı)'],['br','Hafta sonu/tatil mola (saat)']];
 let S={...DEF},D={},Y,M,sel=null;
 try{const r=JSON.parse(localStorage.getItem('maas.v1')||'{}');if(r.s)S={...DEF,...r.s};if(r.d)D=r.d}catch(e){}
 const save=()=>{try{localStorage.setItem('maas.v1',JSON.stringify({s:S,d:D}))}catch(e){}};
@@ -153,7 +158,7 @@ function render(){
   $('#tb').innerHTML=c.R.filter(r=>r[1]).map(r=>`<tr><td>${r[0]}<small>${r[3]}</small></td><td class="${r[2]>0?'p':'m'}">${r[2]>0?'':'-'}${TRY(r[1])}</td></tr>`).join('')
    +(c.yemek>0?`<tr><td>Yemek kartı<small>${c.meal} gün x ${TRY(S.yem)}</small></td><td class="p">${TRY(c.yemek)}</td></tr>`:'')
    +`<tr class="tot"><td>Toplam</td><td>${TRY(c.total)}</td></tr>`;
-  dayPanel()}
+  dayPanel();cmpRender()}
 function dayPanel(){
   const el=$('#day');
   if(!sel){el.innerHTML='<h2>Gün detayı</h2><p>Takvimden bir güne dokun, fazla mesai saatini gir.</p>';return}
@@ -163,14 +168,17 @@ function dayPanel(){
   el.innerHTML=`<h2>${d} ${MN[m-1]} ${y}, ${DN[i.dow]}</h2><p>${lab}. Mesai katsayısı x${mult}</p>
    ${i.kind==='w'?`<div class="row"><label for="ty">Durum</label><select id="ty"><option value="n">Çalıştı</option><option value="i">Yıllık izin</option><option value="r">Raporlu</option><option value="x">Devamsız</option></select></div>`:''}
    <div class="row"><label for="hh">Fazla mesai (saat)</label><input id="hh" type="number" min="0" max="16" step="0.5" value="${e.h||''}" placeholder="0"></div>
+   <div class="row"><label for="ta">Giriş</label><input id="ta" type="time" value="${e.a||''}"><label for="tb" style="min-width:auto">Çıkış</label><input id="tb" type="time" value="${e.b||''}"></div>
+   <p class="note" style="margin:-4px 0 10px">Giriş ve çıkış saatini girersen fazla mesai otomatik hesaplanır (vardiya ${S.shS}–${S.shE}).</p>
    <div class="row"><button class="btn" data-a="1">+1</button><button class="btn" data-a="2">+2</button><button class="btn" data-a="3">+3</button><button class="btn" data-a="4">+4</button><button class="btn" data-a="0">Temizle</button></div>`;
-  const set=(t,h)=>{const o={t:t,h:h};if(o.t==='n'&&!o.h)delete D[sel];else D[sel]=o;save();render()};
-  const ty=$('#ty');if(ty){ty.value=e.t;ty.onchange=()=>set(ty.value,ty.value==='n'?e.h:0)}
+  const set=(t,h,a,b)=>{const o={t:t,h:h};if(a&&b){o.a=a;o.b=b}if(o.t==='n'&&!o.h&&!o.a)delete D[sel];else D[sel]=o;save();render()};
+  const ty=$('#ty');if(ty){ty.value=e.t;ty.onchange=()=>{const k=ty.value==='n';set(ty.value,k?e.h:0,k?e.a:'',k?e.b:'')}}
   $('#hh').onchange=ev=>set(ty?ty.value:'n',Math.max(0,Math.min(16,+ev.target.value||0)));
+  const ta=$('#ta'),tb=$('#tb'),au=()=>{if(!ta.value||!tb.value)return;set(ty?ty.value:'n',autoH(i.kind,ta.value,tb.value),ta.value,tb.value)};ta.onchange=au;tb.onchange=au;
   el.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const a=+b.dataset.a;set(ty?ty.value:'n',a?Math.min(16,(+e.h||0)+a):0)})}
 $('#pv').onclick=()=>{M--;if(M<0){M=11;Y--}sel=null;render()};
 $('#nx').onclick=()=>{M++;if(M>11){M=0;Y++}sel=null;render()};
-$('#fs').innerHTML='<div><label for="f_start">İşe başlangıç tarihi</label><input id="f_start" type="date" value="'+S.start+'"></div>'+FLD.map(f=>`<div><label for="f_${f[0]}">${f[1]}</label><input id="f_${f[0]}" type="number" step="any" value="${S[f[0]]}"></div>`).join('');
+$('#fs').innerHTML='<div><label for="f_start">İşe başlangıç tarihi</label><input id="f_start" type="date" value="'+S.start+'"></div><div><label for="f_shS">Vardiya başlangıcı</label><input id="f_shS" type="time" value="'+S.shS+'"></div><div><label for="f_shE">Vardiya bitişi</label><input id="f_shE" type="time" value="'+S.shE+'"></div>'+FLD.map(f=>`<div><label for="f_${f[0]}">${f[1]}</label><input id="f_${f[0]}" type="number" step="any" value="${S[f[0]]}"></div>`).join('');
 FLD.forEach(f=>$('#f_'+f[0]).onchange=ev=>{const v=parseFloat(ev.target.value);S[f[0]]=isNaN(v)?DEF[f[0]]:v;save();render()});
 $('#f_start').onchange=ev=>{S.start=ev.target.value||DEF.start;save();render()};
 render();
@@ -179,6 +187,29 @@ $('#rs').onclick=()=>$('#rf').click();
 $('#rf').onchange=ev=>{const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{let j;try{j=JSON.parse(r.result);if(!j||typeof j!=='object'||(!j.s&&!j.d))throw 0}catch(e){alert('Geçersiz yedek dosyası.');return}
   if(!confirm('Mevcut veriler yedekteki verilerle değiştirilecek. Devam edilsin mi?'))return;S={...DEF,...(j.s||{})};D=j.d||{};save();location.reload()};r.readAsText(f);ev.target.value=''};
 if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+const tm=s=>{const [a,b]=String(s).split(':').map(Number);return a+(b||0)/60};
+function autoH(kind,a,b){let x=tm(a),y=tm(b);if(y<=x)y+=24;const st=S.rnd>0?S.rnd:0.5;let h;
+  if(kind==='w'){const s=tm(S.shS);let e=tm(S.shE);if(e<=s)e+=24;h=Math.max(0,s-x)+Math.max(0,y-e)}else h=Math.max(0,y-x-(S.br||0));
+  return Math.min(16,Math.floor(h/st+1e-9)*st)}
+function cmpRender(){const ci=$('#cm');if(!ci.value){let y=Y,m=M-1;if(m<0){m=11;y--}ci.value=y+'-'+pad(m+1)}
+  const [oy,om]=ci.value.split('-').map(Number),sy=Y,sm=M;Y=oy;M=om-1;const o=calc();Y=sy;M=sm;const c=calc();
+  const lb=(y,m)=>MN[m].slice(0,3)+' '+y,f=(v,u)=>u==='t'?TRY(v):u==='s'?String(v).replace('.',',')+' sa':String(v);
+  const df=(a,b,u)=>{const d=Math.round((a-b)*100)/100;return `<td class="${d>0?'p':d<0?'m':''}">${d>0?'+':d<0?'-':''}${f(Math.abs(d),u)}</td>`};
+  const rw=(n,a,b,u)=>`<tr><td>${n}</td><td>${f(a,u)}</td><td>${f(b,u)}</td>${df(a,b,u)}</tr>`;
+  let t=`<tr><th></th><th>${lb(sy,sm)}</th><th>${lb(oy,om-1)}</th><th>Fark</th></tr>`+rw('Toplam kazanç',c.total,o.total,'t')+rw('Banka hesabı',c.nakit,o.nakit,'t')+rw('Fazla mesai',c.otH,o.otH,'s')+rw('Çalışılan gün',c.meal,o.meal,'n');
+  c.R.forEach((r,k)=>{const a=r[1]*r[2],b=o.R[k][1]*o.R[k][2];if(a||b)t+=rw(r[0],a,b,'t')});
+  $('#cmt').innerHTML=t}
+function pdfSummary(){const c=calc(),n=new Date(Y,M+1,0).getDate();let rows='';
+  for(let d=1;d<=n;d++){const i=info(Y,M,d),e=D[i.key];if(e&&+e.h>0)rows+=`<tr><td>${d} ${MN[M]}, ${DN[i.dow]}</td><td>${i.hol||''}</td><td>${e.a?e.a+' – '+e.b:''}</td><td>${e.h} sa</td></tr>`}
+  $('#pr').innerHTML=`<h1>${MN[M]} ${Y} maaş ve mesai özeti</h1><div>Toplam kazanç: <b>${TRY(c.total)}</b> &nbsp; Banka hesabı: <b>${TRY(c.nakit)}</b>${c.yemek>0?' &nbsp; Yemek kartı: <b>'+TRY(c.yemek)+'</b>':''}</div>
+  <h2>Bordro dökümü</h2><table>${c.R.filter(r=>r[1]).map(r=>`<tr><td>${r[0]}<small> ${r[3]}</small></td><td>${r[2]>0?'':'-'}${TRY(r[1])}</td></tr>`).join('')}${c.yemek>0?`<tr><td>Yemek kartı<small> ${c.meal} gün</small></td><td>${TRY(c.yemek)}</td></tr>`:''}<tr class="tot"><td>Toplam</td><td>${TRY(c.total)}</td></tr></table>
+  <h2>Fazla mesai günleri (${c.otH} saat)</h2>${rows?`<table><tr><th>Gün</th><th>Tatil</th><th>Saat aralığı</th><th>Süre</th></tr>${rows}</table>`:'<div>Bu ay fazla mesai girişi yok.</div>'}
+  <p style="color:#555;font-size:11px;margin-top:18px">Tutarlar net ve tahminidir. Oluşturulma: ${new Date().toLocaleDateString('tr-TR')}</p>`;
+  window.print()}
+$('#pdf').onclick=pdfSummary;
+$('#cm').onchange=cmpRender;
+['shS','shE'].forEach(k=>$('#f_'+k).onchange=ev=>{S[k]=ev.target.value||DEF[k];save();render()});
 </script>
 </body>
 </html>
