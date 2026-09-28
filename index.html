@@ -106,7 +106,7 @@ const DN=['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
 const HF={'01-01':'Yılbaşı','04-23':'23 Nisan','05-01':'1 Mayıs','05-19':'19 Mayıs','07-15':'15 Temmuz','08-30':'30 Ağustos','10-29':'29 Ekim'};
 const RB={2026:{'03-20':'Ramazan B.','03-21':'Ramazan B.','03-22':'Ramazan B.','05-27':'Kurban B.','05-28':'Kurban B.','05-29':'Kurban B.','05-30':'Kurban B.'},2027:{'03-09':'Ramazan B.','03-10':'Ramazan B.','03-11':'Ramazan B.','05-16':'Kurban B.','05-17':'Kurban B.','05-18':'Kurban B.','05-19':'Kurban B.'}};
 const AR={2026:{'03-19':'Arife','05-26':'Arife'},2027:{'03-08':'Arife','05-15':'Arife'}};
-const DEF={base:66851.79,sey:3000,tek:20250,kid:0,egt:2,start:'2026-10-19',tekIk:1,pay:225,mWk:1.5,mSun:1.5,mHol:2,yem:0,en:0,oth:0,ded:0,otTax:0};
+const DEF={base:0,sey:0,tek:0,kid:0,egt:0,start:'2020-01-01',tekIk:1,pay:225,mWk:1.5,mSun:1.5,mHol:2,yem:0,en:0,oth:0,ded:0,otTax:0};
 const FLD=[['base','Aylık temel net ücret'],['sey','Seyyanen net (2026 sonuna kadar)'],['tek','Teknopark yan hak (aylık)'],['kid','Kıdem yılı (en fazla 10)'],['egt','Eğitim tazminatı %'],['tekIk','Teknopark ikramiye aylarında da (1/0)'],['pay','Saatlik ücret böleni'],['mWk','Hafta içi ve Cmt mesai katsayısı'],['mSun','Pazar katsayısı'],['mHol','Resmi tatil katsayısı'],['yem','Yemek kartı gün başı (yemekhane: 0)'],['en','Enerjik bölge saati (33,66 TL/sa)'],['oth','Diğer ek ödeme'],['ded','Diğer kesinti (avans, BES...)'],['otTax','Fazla mesai kesinti %']];
 let S={...DEF},D={},Y,M,sel=null;
 try{const r=JSON.parse(localStorage.getItem('maas.v1')||'{}');if(r.s)S={...DEF,...r.s};if(r.d)D=r.d}catch(e){}
