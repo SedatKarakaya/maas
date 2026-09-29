@@ -80,7 +80,7 @@ details summary{cursor:pointer;font-weight:800;font-size:16px}
 #lk{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;background:var(--bg);padding:20px;padding-top:calc(20px + env(safe-area-inset-top,0px));padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))}
 #lk.on,html.locked #lk{display:flex}html.locked main{visibility:hidden}
 .lkb{width:100%;max-width:320px;text-align:center}.lkb h2{margin:0 0 4px;font-size:20px}
-.dots{display:flex;justify-content:center;gap:12px;margin:16px 0;min-height:16px}.dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--acc)}.dots i.f{background:var(--acc)}
+.dots{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:16px 0;min-height:16px}.dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--acc)}.dots i.f{background:var(--acc)}
 .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.pad button{aspect-ratio:1.5/1;font-size:22px;font-weight:700;border-radius:16px;background:var(--gl2);border:1px solid var(--bd);cursor:pointer}.pad button:active{background:var(--bd)}
 .lkx{display:flex;justify-content:space-between;gap:8px;margin-top:14px}
 .tabbtn.on{background:var(--acc);color:#fff;border-color:transparent}
@@ -120,8 +120,8 @@ input.inh{border-style:dashed;opacity:.75}
       <section class="g"><details><summary>Ayarlar ve zam dönemleri</summary>
         <div id="hist"></div>
         <div class="fs" id="fs"></div>
-        <div class="row" style="margin-top:14px"><b style="font-size:13.5px">Uygulama kilidi</b><button class="btn" id="lkset"></button><button class="btn" id="lkoff">Kilidi kaldır</button></div>
-        <p class="note">PIN ile kilitlersen uygulama açılırken ve 15 saniyeden uzun arka planda kaldığında PIN sorar. Bu, telefonu eline alan meraklıya karşı bir korumadır. Veriler şifrelenmez ve yedek dosyası PIN ile korunmaz.</p>
+        <div class="row" style="margin-top:14px"><b style="font-size:13.5px">Uygulama kilidi</b><button class="btn" id="lkset"></button><button class="btn" id="lkoff">Kilidi kaldır</button><button class="btn" id="lkrec">Kurtarma kodunu yenile</button></div>
+        <p class="note">PIN ile kilitlersen uygulama açılırken ve 15 saniyeden uzun arka planda kaldığında PIN sorar. PIN oluştururken sana bir kerelik kurtarma kodu gösterilir; bir yere yazıp sakla. PIN'i unutursan "PIN'i unuttum" ile bu kodu girerek verilerini silmeden yeni bir PIN belirleyebilirsin. Kurtarma kodun da yoksa tek çare verileri silmektir. Veriler ve kod bu cihazda saklanır, e-posta ile gönderilmez.</p>
         <div class="row" style="margin-top:14px"><button class="btn" id="bk">Yedekle</button><button class="btn" id="rs">Geri yükle</button><input type="file" id="rf" accept=".json,application/json" hidden></div>
         <p class="note">Yedekle: ayarlar ve mesai girişlerini .json dosyası olarak indirir. Geri yükle: bu dosyayı okuyup mevcut verilerin yerine koyar. Uygulamayı silmeden önce yedek al.</p>
         <p class="note">Tutarlar net. Fazla mesai, görüntülenen ay için geçerli zam dönemine göre hesaplanır. Pazar ve resmi tatil katsayıları varsayımdır, İK ile teyit et. Bayram tarihleri 2026 ve 2027 için girilidir.</p></details></section>
@@ -314,33 +314,67 @@ $('#cm').onchange=cmpRender;
 const LK='maas.lock',LU='maas.lockuntil',HR=document.documentElement;
 const lget=()=>{try{return JSON.parse(localStorage.getItem(LK))}catch(e){return null}};
 async function hp(s0,pin){const s=s0+':'+pin;try{if(window.crypto&&crypto.subtle){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}}catch(e){}let x=5381;for(let i=0;i<s.length;i++)x=((x<<5)+x+s.charCodeAt(i))|0;return'f'+x}
-const LT={unlock:['Uygulama kilitli','PIN kodunu gir'],old:['Mevcut PIN','Devam etmek için mevcut PIN\u2019i gir'],new:['Yeni PIN','4-6 haneli bir PIN gir, sonra \u2713 tuşuna bas'],again:['PIN\u2019i tekrar gir','Aynı PIN\u2019i bir kez daha gir']};
-let L={mode:'',buf:'',tmp:'',next:'',fails:0},hid=0,hold=0;
-function lkDraw(msg){$('#lkt').textContent=LT[L.mode][0];$('#lkm').textContent=msg||LT[L.mode][1];
+const LT={unlock:['Uygulama kilitli','PIN kodunu gir'],old:['Mevcut PIN','Devam etmek için mevcut PIN\u2019i gir'],new:['Yeni PIN','4-6 haneli bir PIN gir, sonra \u2713 tuşuna bas'],again:['PIN\u2019i tekrar gir','Aynı PIN\u2019i bir kez daha gir'],recover:['Kurtarma kodu','PIN oluştururken sana gösterilen '+12+' haneli kodu gir']};
+const RECLEN=12;
+let L={mode:'',buf:'',tmp:'',next:'',fails:0,fromLock:false,reveal:false},hid=0,hold=0;
+function genRecovery(){try{if(window.crypto&&crypto.getRandomValues){const a=new Uint32Array(RECLEN);crypto.getRandomValues(a);return[...a].map(x=>x%10).join('')}}catch(e){}let s='';for(let i=0;i<RECLEN;i++)s+=Math.floor(Math.random()*10);return s}
+function lkDraw(msg){$('#lkp').style.display='';$('#lkc').textContent='Vazgeç';
+  $('#lkt').textContent=LT[L.mode][0];$('#lkm').textContent=msg||LT[L.mode][1];
   $('#lkd').innerHTML=Array.from({length:Math.max(4,L.buf.length)},(_, i)=>`<i class="${i<L.buf.length?'f':''}"></i>`).join('');
-  $('#lkc').style.visibility=L.mode==='unlock'?'hidden':'visible';$('#lkf').style.visibility=L.mode==='unlock'?'visible':'hidden'}
-function lkShow(mode,next){L={mode,buf:'',tmp:'',next:next||'',fails:0};if(mode==='unlock')HR.classList.add('locked');lkDraw();$('#lk').classList.add('on')}
+  $('#lkc').style.visibility=L.mode==='unlock'?'hidden':'visible';
+  const showF=L.mode==='unlock'||L.mode==='recover';
+  $('#lkf').style.visibility=showF?'visible':'hidden';
+  $('#lkf').textContent=L.mode==='recover'?'Kurtarma kodum da yok, verileri sil':'PIN\u2019i unuttum'}
+function lkShow(mode,next,extra){L=Object.assign({mode,buf:'',tmp:'',next:next||'',fails:0,fromLock:false,reveal:false},extra||{});if(mode==='unlock')HR.classList.add('locked');lkDraw();$('#lk').classList.add('on')}
 function lkClose(){$('#lk').classList.remove('on');HR.classList.remove('locked')}
-function lkRefresh(){const on=!!lget();$('#lkset').textContent=on?'PIN değiştir':'PIN belirle';$('#lkoff').style.display=on?'':'none'}
-async function lkOk(){const pin=L.buf;if(pin.length<4)return;const lock=lget();
+function lkCancel(){if($('#lkp').style.display==='none'){$('#lkp').style.display='';lkClose();return}
+  if(L.fromLock&&L.mode!=='unlock'){lkShow('unlock');return}
+  lkClose()}
+function showReveal(code){$('#lkt').textContent='Kurtarma kodun';
+  const grp=code.match(/.{1,4}/g).join(' ');
+  $('#lkm').innerHTML=`PIN\u2019i unutursan verilerini kaybetmeden sıfırlamanın tek yolu bu koddur. Bir yere yaz ya da ekran görüntüsü al; bir daha gösterilmeyecek.<br><br><b style="font-size:22px;letter-spacing:2px;color:var(--tx)">${grp}</b><div style="margin-top:12px"><button class="btn" id="lkcp">Kopyala</button></div>`;
+  $('#lkd').innerHTML='';$('#lkp').style.display='none';
+  $('#lkc').style.visibility='visible';$('#lkc').textContent='Anladım, kaydettim';
+  $('#lkf').style.visibility='hidden';
+  $('#lk').classList.add('on');
+  const cp=$('#lkcp');if(cp)cp.onclick=()=>{try{navigator.clipboard.writeText(code)}catch(e){}cp.textContent='Kopyalandı \u2713'}}
+function lkRefresh(){const on=!!lget();$('#lkset').textContent=on?'PIN değiştir':'PIN belirle';$('#lkoff').style.display=on?'':'none';$('#lkrec').style.display=on?'':'none'}
+async function lkOk(){const pin=L.buf;const minLen=L.mode==='recover'?RECLEN:4;if(pin.length<minLen)return;const lock=lget();
   if(L.mode==='unlock'||L.mode==='old'){const ok=lock&&await hp(lock.s,pin)===lock.h;
     if(!ok){L.buf='';if(++L.fails>=5){L.fails=0;try{localStorage.setItem(LU,Date.now()+30000)}catch(e){}}lkDraw('Yanlış PIN');return}
-    L.fails=0;if(L.mode==='unlock'){lkClose();return}
+    L.fails=0;
+    if(L.mode==='unlock'){
+      if(!lock.rh){const plain=genRecovery();const rs=Math.random().toString(36).slice(2)+Date.now();const rh=await hp(rs,plain);try{localStorage.setItem(LK,JSON.stringify({...lock,rs,rh}))}catch(e){}showReveal(plain);return}
+      lkClose();return}
     if(L.next==='remove'){try{localStorage.removeItem(LK)}catch(e){}lkClose();lkRefresh();return}
+    if(L.next==='onlyrecovery'){const plain=genRecovery();const rs=Math.random().toString(36).slice(2)+Date.now();const rh=await hp(rs,plain);try{localStorage.setItem(LK,JSON.stringify({...lock,rs,rh}))}catch(e){}showReveal(plain);return}
     L.mode='new';L.buf='';lkDraw();return}
+  if(L.mode==='recover'){const ok=lock&&lock.rh&&await hp(lock.rs,pin)===lock.rh;
+    if(!ok){L.buf='';if(++L.fails>=5){L.fails=0;try{localStorage.setItem(LU,Date.now()+30000)}catch(e){}}lkDraw('Kurtarma kodu yanlış');return}
+    L.fails=0;lkShow('new',null,{fromLock:true,reveal:true});return}
   if(L.mode==='new'){L.tmp=pin;L.buf='';L.mode='again';lkDraw();return}
   if(L.mode==='again'){if(pin!==L.tmp){L.mode='new';L.buf='';L.tmp='';lkDraw('PIN\u2019ler uyuşmadı, baştan gir');return}
-    const s=Math.random().toString(36).slice(2)+Date.now();try{localStorage.setItem(LK,JSON.stringify({s,h:await hp(s,pin)}))}catch(e){}lkClose();lkRefresh()}}
+    const s=Math.random().toString(36).slice(2)+Date.now();const h=await hp(s,pin);
+    const prev=lget()||{};let rs=prev.rs,rh=prev.rh,plain=null;
+    if(L.reveal||!rh){plain=genRecovery();rs=Math.random().toString(36).slice(2)+Date.now();rh=await hp(rs,plain)}
+    try{localStorage.setItem(LK,JSON.stringify({s,h,rs,rh}))}catch(e){}
+    lkRefresh();
+    if(plain)showReveal(plain);else lkClose()}}
 function lkKey(k){const w=(+localStorage.getItem(LU)||0)-Date.now();if(w>0){lkDraw('Çok fazla deneme. '+Math.ceil(w/1000)+' sn bekle');return}
-  if(k==='ok')lkOk();else if(k==='b'){L.buf=L.buf.slice(0,-1);lkDraw()}else if(L.buf.length<6){L.buf+=k;lkDraw()}}
+  const maxLen=L.mode==='recover'?RECLEN:6;
+  if(k==='ok')lkOk();else if(k==='b'){L.buf=L.buf.slice(0,-1);lkDraw()}else if(L.buf.length<maxLen){L.buf+=k;lkDraw()}}
 $('#lkp').innerHTML=['1','2','3','4','5','6','7','8','9','b','0','ok'].map(k=>`<button data-k="${k}" aria-label="${k==='b'?'Sil':k==='ok'?'Onayla':k}">${k==='b'?'\u232B':k==='ok'?'\u2713':k}</button>`).join('');
 $('#lkp').onclick=ev=>{const b=ev.target.closest('button');if(b)lkKey(b.dataset.k)};
 document.addEventListener('keydown',ev=>{if(!$('#lk').classList.contains('on')&&!HR.classList.contains('locked'))return;
   if(/^\d$/.test(ev.key))lkKey(ev.key);else if(ev.key==='Backspace')lkKey('b');else if(ev.key==='Enter')lkKey('ok')});
-$('#lkc').onclick=lkClose;
-$('#lkf').onclick=()=>{if(!confirm('PIN\u2019i unuttuysan kilidi kaldırmanın tek yolu uygulama verilerini silmektir. Ayarlar, mesai girişleri ve kilit silinir. Yedek dosyan varsa sonra Geri yükle ile alabilirsin. Devam edilsin mi?'))return;try{['maas.v1',LK,LU].forEach(k=>localStorage.removeItem(k))}catch(e){}location.reload()};
-$('#lkset').onclick=()=>lget()?lkShow('old','change'):lkShow('new');
+$('#lkc').onclick=lkCancel;
+$('#lkf').onclick=()=>{
+  if(L.mode==='unlock'){lkShow('recover',null,{fromLock:true});return}
+  if(!confirm('Kurtarma kodun da yoksa PIN\u2019i sıfırlamanın tek yolu uygulama verilerini silmektir. Ayarlar, mesai girişleri, giderler ve kilit silinir. Yedek dosyan varsa sonra Geri yükle ile alabilirsin. Devam edilsin mi?'))return;
+  try{['maas.v1',LK,LU].forEach(k=>localStorage.removeItem(k))}catch(e){}location.reload()};
+$('#lkset').onclick=()=>lget()?lkShow('old','change'):lkShow('new',null,{reveal:true});
 $('#lkoff').onclick=()=>lkShow('old','remove');
+$('#lkrec').onclick=()=>{if(!lget())return alert('Önce PIN belirlemelisin.');lkShow('old','onlyrecovery')};
 ['rs','pdf','bk'].forEach(id=>$('#'+id).addEventListener('click',()=>{hold=Date.now()+120000}));
 document.addEventListener('visibilitychange',()=>{if(document.hidden)hid=Date.now();else if(lget()&&hid&&Date.now()-hid>15000&&Date.now()>hold)lkShow('unlock')});
 lkRefresh();if(lget())lkShow('unlock');
