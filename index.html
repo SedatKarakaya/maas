@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aylık Maaş ve Mesai Hesabı</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:linear-gradient(135deg,#c7d2fe,#fbcfe8 55%,#bae6fd);--tx:#0f172a;--mut:#475569;--gl:rgba(255,255,255,.42);--gl2:rgba(255,255,255,.6);--bd:rgba(255,255,255,.75);--acc:#4f46e5;--pos:#047857;--neg:#be123c;--hol:#e11d48;--wk:#64748b;--blob1:#818cf8;--blob2:#f472b6;--blob3:#38bdf8;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:linear-gradient(135deg,#0f172a,#1e1b4b 55%,#0c1a2e);--tx:#e2e8f0;--mut:#94a3b8;--gl:rgba(255,255,255,.07);--gl2:rgba(255,255,255,.13);--bd:rgba(255,255,255,.16);--acc:#a5b4fc;--pos:#6ee7b7;--neg:#fda4af;--hol:#fb7185;--wk:#94a3b8;--blob1:#4338ca;--blob2:#be185d;--blob3:#0369a1}}
+:root[data-theme="dark"]{--bg:linear-gradient(135deg,#0f172a,#1e1b4b 55%,#0c1a2e);--tx:#e2e8f0;--mut:#94a3b8;--gl:rgba(255,255,255,.07);--gl2:rgba(255,255,255,.13);--bd:rgba(255,255,255,.16);--acc:#a5b4fc;--pos:#6ee7b7;--neg:#fda4af;--hol:#fb7185;--wk:#94a3b8;--blob1:#4338ca;--blob2:#be185d;--blob3:#0369a1}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--tx);font:15px/1.5 Manrope,system-ui,-apple-system,"Segoe UI",sans-serif;position:relative;overflow-x:hidden}
+.blob{position:fixed;border-radius:50%;filter:blur(70px);opacity:.55;z-index:0;pointer-events:none}
+.b1{width:340px;height:340px;background:var(--blob1);top:-80px;left:-90px}
+.b2{width:300px;height:300px;background:var(--blob2);top:35%;right:-100px}
+.b3{width:360px;height:360px;background:var(--blob3);bottom:-120px;left:20%}
+main{position:relative;z-index:1;max-width:1040px;margin:0 auto;padding:18px 14px 40px;display:grid;gap:14px}
+.g{background:var(--gl);border:1px solid var(--bd);border-radius:22px;backdrop-filter:blur(22px) saturate(160%);-webkit-backdrop-filter:blur(22px) saturate(160%);box-shadow:0 8px 32px rgba(31,38,135,.12);padding:16px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.top h1{font-size:19px;margin:0;font-weight:800}
+.nav{display:flex;align-items:center;gap:8px}
+.nav b{min-width:120px;text-align:center;font-size:16px}
+button,select,input{font:inherit;color:inherit}
+.btn{background:var(--gl2);border:1px solid var(--bd);border-radius:12px;padding:7px 13px;cursor:pointer;font-weight:600}
+.btn:hover{background:var(--bd)}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.hero small{color:var(--mut)}
+.hero .big{font-size:clamp(34px,8vw,52px);font-weight:800;letter-spacing:-1px;line-height:1.1;margin:2px 0 4px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:10px}
+.st{background:var(--gl2);border:1px solid var(--bd);border-radius:16px;padding:10px 12px}
+.st span{display:block;color:var(--mut);font-size:12.5px}.st b{font-size:19px}
+.st small{display:block;color:var(--mut);font-size:11.5px}
+.st.k{background:var(--gl);box-shadow:inset 0 0 0 1px var(--acc)}
+.cols{display:grid;grid-template-columns:1.1fr 1fr;gap:14px;align-items:start}
+@media(max-width:820px){.cols{grid-template-columns:1fr}}
+h2{font-size:16px;margin:0 0 10px;font-weight:800}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.dh{text-align:center;font-size:12px;color:var(--mut);padding-bottom:2px}
+.c{aspect-ratio:1/1.05;background:var(--gl2);border:1px solid transparent;border-radius:13px;padding:4px 5px;cursor:pointer;text-align:left;position:relative;display:flex;flex-direction:column;justify-content:space-between;min-width:0}
+.c:hover{border-color:var(--bd)}
+.c.e{visibility:hidden}
+.c .n{font-weight:700;font-size:14px}
+.c.w .n{color:var(--wk)}.c.h .n{color:var(--hol)}
+.c.h{background:rgba(244,63,94,.15)}
+.c.t{box-shadow:0 0 0 2px var(--acc)}
+.c.pre{opacity:.35;cursor:default}
+.c.s{border-color:var(--acc);background:var(--gl)}
+.c i{font-style:normal;font-size:11px;line-height:1.15;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+.c em{font-style:normal;font-weight:800;font-size:12px;color:var(--acc)}
+.lg{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:12.5px;color:var(--mut)}
+.day p{margin:0 0 10px;color:var(--mut);font-size:13.5px}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.row label{min-width:110px;font-size:13.5px;color:var(--mut)}
+input,select{background:var(--gl2);border:1px solid var(--bd);border-radius:11px;padding:7px 10px;width:100%;min-width:0}
+.row input,.row select{width:auto;flex:1}
+input[type=checkbox]{width:auto;flex:none}
+.res{background:var(--gl2);border:1px solid var(--bd);border-radius:12px;padding:8px 10px;font-size:13px;margin:0 0 10px}
+table{width:100%;border-collapse:collapse}
+td{padding:7px 4px;border-bottom:1px solid var(--bd);vertical-align:top}
+td small{display:block;color:var(--mut);font-size:12px}
+td:last-child{text-align:right;font-weight:700;white-space:nowrap}
+tr.gh td{text-align:left;color:var(--acc);font-weight:800;padding-top:14px;border:0}
+tr.sub td{border-bottom:0;font-weight:800}
+.p{color:var(--pos)}.m{color:var(--neg)}
+tr.tot td{border:0;font-size:17px;font-weight:800;padding-top:12px}
+details summary{cursor:pointer;font-weight:800;font-size:16px}
+.fs{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:12px}
+.fs label{display:block;font-size:12.5px;color:var(--mut);margin-bottom:3px}
+.note{font-size:12.5px;color:var(--mut);margin-top:10px}
+</style>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#4f46e5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+</head>
+<body>
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+<main>
+  <div class="g top"><h1>Aylık maaş ve mesai hesabı</h1>
+    <div class="nav"><button class="btn" id="pv" aria-label="Önceki ay">‹</button><b id="mt"></b><button class="btn" id="nx" aria-label="Sonraki ay">›</button></div></div>
+  <section class="g hero" id="hero"></section>
+  <section class="stats" id="pays"></section>
+  <section class="stats" id="stats"></section>
+  <div class="cols">
+    <div style="display:grid;gap:14px">
+      <section class="g"><h2>Takvim</h2><div class="cal" id="cal"></div>
+        <div class="lg"><span style="color:var(--hol)">Kırmızı: resmi tatil</span><span>Gri: hafta sonu</span><span>Çerçeve: bugün</span><span>Rakam: sayılan mesai (sa:dk)</span></div></section>
+      <section class="g day" id="day"></section>
+    </div>
+    <div style="display:grid;gap:14px">
+      <section class="g"><h2>Bordro dökümü</h2><table id="tb"></table></section>
+      <section class="g"><details><summary>Ayarlar ve tutarlar</summary><div class="fs" id="fs"></div>
+        <p class="note">Mesai kuralı: Hafta içi normal bitiş = giriş + 9 saat (en erken 16:00). Aşan süreden önce 15 dk hazırlık düşülür; kalan 30 dk altındaysa sayılmaz. Haftalık ilk 5 saat x1,25, sonrası x1,50 (kat sayıları). Cumartesi bağımsız x1,50. Pazar ve resmi tatil katsayıları varsayımdır. Saatlik ücret böleni 40 saatlik hafta için 200 alındı; İK'dan teyit et. Benzin fiyatı otomatik çekilemez, önceki ayın 25'i Opet İstanbul fiyatını elle gir.</p></details></section>
+    </div>
+  </div>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const TRY=n=>new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY'}).format(n||0);
+const MN=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+const DN=['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'],ND=['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
+const HF={'01-01':'Yılbaşı','04-23':'23 Nisan','05-01':'1 Mayıs','05-19':'19 Mayıs','07-15':'15 Temmuz','08-30':'30 Ağustos','10-29':'29 Ekim'};
+const RB={2026:{'03-20':'Ramazan B.','03-21':'Ramazan B.','03-22':'Ramazan B.','05-27':'Kurban B.','05-28':'Kurban B.','05-29':'Kurban B.','05-30':'Kurban B.'},2027:{'03-09':'Ramazan B.','03-10':'Ramazan B.','03-11':'Ramazan B.','05-16':'Kurban B.','05-17':'Kurban B.','05-18':'Kurban B.','05-19':'Kurban B.'}};
+const AR={2026:{'03-19':'Arife','05-26':'Arife'},2027:{'03-08':'Arife','05-15':'Arife'}};
+const PRICES={'2026-10':80.4,'2026-11':76.3};
+const DEF={base:0,sey:0,tek:0,kid:0,egt:0,kp:0,start:'',tekIk:1,pay:200,m1:1.25,lim:5,m2:1.5,mSat:1.5,mSun:1.5,mHol:2,prep:15,minM:30,arr:'08:00',yem:0,yem2:0,fl:0,fd:22,seyY:0,fpDef:76.3,harc:0,en:0,enr:0,oth:0,ded:0,otTax:0,fp:{}};
+const FLD=[['base','Aylık temel net ücret'],['sey','Seyyanen net'],['seyY','Seyyanen son yıl (0: süresiz)'],['tek','Sabit yan hak (aylık)'],['kid','Kıdem yılı (en fazla 10)'],['kp','Kıdem oranı % (yıl başına)'],['egt','Eğitim tazminatı %'],['tekIk','Yan hak ikramiye aylarında da (1/0)'],['pay','Saatlik ücret böleni'],['m1','Fazla süreli katsayı (ilk kademe)'],['lim','İlk kademe haftalık sınır (saat)'],['m2','Fazla çalışma katsayısı'],['mSat','Cumartesi katsayısı'],['mSun','Pazar katsayısı'],['mHol','Resmi tatil katsayısı'],['prep','Hazırlık süresi (dk)'],['minM','Asgari sayılan mesai (dk)'],['arr','Varsayılan giriş saati','time'],['yem','SetCard yemek parası (gün)'],['yem2','20:30 sonrası ek yemek'],['fl','Aylık yakıt hakkı (lt)'],['fd','Yakıt gün böleni'],['fpDef','Varsayılan benzin TL/lt'],['harc','Harcırah (gün)'],['en','Saat bazlı ek ödeme (saat)'],['enr','Saat bazlı ek ödeme saat ücreti'],['oth','Diğer ek ödeme (avans)'],['ded','Diğer kesinti (avans)'],['otTax','Fazla mesai kesinti %']];
+let S={...DEF},D={},Y,M,sel=null,C=null;
+try{const r=JSON.parse(localStorage.getItem('maas.v2')||'{}');if(r.s)S={...DEF,...r.s};if(r.d)D=r.d}catch(e){}
+const save=()=>{try{localStorage.setItem('maas.v2',JSON.stringify({s:S,d:D}))}catch(e){}};
+const pad=n=>String(n).padStart(2,'0');
+const SD=()=>S.start?new Date(S.start+'T00:00:00'):new Date(0);
+const now=new Date();Y=now.getFullYear();M=now.getMonth();if(now<SD()){Y=SD().getFullYear();M=SD().getMonth()}
+const ym=()=>Y+'-'+pad(M+1);
+const pr=()=>S.fp[ym()]??PRICES[ym()]??S.fpDef;
+const tm=s=>{const a=(s||'').split(':');return a.length<2||a[0]===''?null:+a[0]+a[1]/60};
+const hm=x=>{const m=Math.round(x*60);return pad(Math.floor(m/60))+':'+pad(m%60)};
+const dur=x=>{const m=Math.round(x*60);return((m>=60?Math.floor(m/60)+' sa ':'')+(m%60||m<60?m%60+' dk':'')).trim()};
+const fd=dt=>dt.getDate()+' '+MN[dt.getMonth()]+' '+ND[dt.getDay()];
+function info(dt){const y=dt.getFullYear(),m=dt.getMonth(),d=dt.getDate(),k=pad(m+1)+'-'+pad(d),dow=(dt.getDay()+6)%7;
+  const hol=HF[k]||(RB[y]||{})[k]||null,half=(AR[y]||{})[k]||(k==='10-28'?'Arife':null);
+  return{key:y+'-'+pad(m+1)+'-'+pad(d),dow,hol,half,kind:hol?'h':dow===6?'p':dow===5?'s':'w'}}
+function lwd(y,m){let d=new Date(y,m+1,0);for(;;){const i=info(d);if(i.dow<5&&!i.hol)return d;d=new Date(d.getFullYear(),d.getMonth(),d.getDate()-1)}}
+function ovt(e,i){
+  if(i.kind==='w'&&e.t!=='n')return{eff:0,note:'',m2:0};
+  const P=S.prep/60;let eff=0,note='',m2=0;
+  if(e.m==='h'){eff=+e.h||0;if(eff>0)note='Net '+dur(eff)+' (15 dk hazırlık düşülmüş sayıldı)';m2=e.m2?1:0}
+  else{const oo=tm(e.o);if(oo===null)return{eff:0,note:'',m2:0};
+    const ii=tm(e.i)??tm(S.arr),be=i.kind==='w'?Math.max(ii+9,16):ii,raw=oo-be;
+    if(raw<=0)return{eff:0,note:i.kind==='w'?'Normal bitiş '+hm(be)+', fazla süre yok':'',m2:0};
+    eff=raw-P;m2=oo>=20.5?1:0;
+    note=(i.kind==='w'?'Normal bitiş '+hm(be)+', ham '+dur(raw):'Ham '+dur(raw))+', hazırlık -'+S.prep+' dk, kalan '+dur(Math.max(eff,0))}
+  if(eff>0&&eff<S.minM/60-1e-9){note+=', '+S.minM+' dk altı sayılmadı';eff=0}
+  if(eff<0)eff=0;
+  return{eff,note,m2}}
+function calc(){
+  const n=new Date(Y,M+1,0).getDate(),hr=S.base/S.pay,sd=SD(),ms=new Date(Y,M,1),me=new Date(Y,M,n),r=me<sd?0:sd<=ms?1:Math.min(1,(n-sd.getDate()+1)/30);
+  const dd={};let otH=0,ot=0,mealT=0,att=0,trv=0,ab=0,hd=0,cnt=0;
+  for(let d=1-info(ms).dow;d<=n;d++){
+    const dt=new Date(Y,M,d),i=info(dt);if(i.dow===0)cnt=0;if(dt<sd)continue;
+    const e=D[i.key]||{t:'n'},o=ovt(e,i);let pay=0,t1=0,t2=0,mul=0;
+    if(o.eff>0){if(i.kind==='w'){t1=Math.min(o.eff,Math.max(0,S.lim-cnt));t2=o.eff-t1;cnt+=o.eff;pay=hr*(t1*S.m1+t2*S.m2)}
+      else{mul=i.kind==='h'?S.mHol:i.kind==='s'?S.mSat:S.mSun;pay=hr*o.eff*mul}}
+    if(d<1)continue;
+    if(i.kind==='h')hd++;
+    let at=o.eff>0;
+    if(i.kind==='w'){if(e.t==='n')at=true;else if(e.t==='x')ab++}
+    if(at){att++;mealT+=S.yem+(o.m2?S.yem2:0)}
+    if(e.v)trv++;
+    otH+=o.eff;ot+=pay;dd[i.key]={...o,pay,t1,t2,mul}}
+  const ik=[2,5,8,11].includes(M),qf=new Date(Math.max(sd,new Date(Y,M-2,1))),ikr=r?Math.min(1,(Math.round((me-qf)/864e5)+1)/90):0,sey=S.seyY&&Y>S.seyY?0:S.sey;
+  const lt=Math.min(S.fl,att*S.fl/S.fd),price=pr(),fuel=lt*price,otNet=ot*(1-S.otTax/100);
+  const AV=[['Temel net ücret',S.base*r,1,r<1?Math.round(r*30)+'/30 gün':''],['Seyyanen ödeme',sey*r,1,''],
+   ['Sabit yan hak',S.tek*r+(ik&&S.tekIk?S.tek*ikr:0),1,ik&&S.tekIk?'İkramiye ayı ek payı dahil':''],
+   ['Eğitim tazminatı',S.base*r*S.egt/100,1,'%'+S.egt],['Kıdem ücreti',S.base*r*(S.kp/100)*Math.min(S.kid,10),1,S.kid+' yıl x %'+S.kp],
+   ['İkramiye',ik?S.base*ikr:0,1,ik?Math.round(ikr*90)+'/90 gün':''],['Diğer ek ödeme',S.oth,1,''],
+   ['Devamsızlık kesintisi',S.base/30*ab,-1,ab+' gün'],['Diğer kesinti',S.ded,-1,'']];
+  const MA=[['Fazla mesai',otNet,1,dur(otH)+' sayılan'],['Yol parası (benzin)',fuel,1,lt.toFixed(1)+' lt x '+TRY(price)],['Saat bazlı ek ödeme',S.en*S.enr,1,S.en+' saat']];
+  const sm=a=>a.reduce((x,q)=>x+q[1]*q[2],0),av=sm(AV),ma=sm(MA),hc=trv*S.harc;
+  return{dd,AV,MA,av,ma,sc:mealT,hc,tot:av+ma,total:av+ma+mealT+hc,otH,att,trv,hd,hr,ot:otNet,
+   dA:r?lwd(Y,M):null,dM:new Date(Y,M+1,15),dH:lwd(Y,M+1)}}
+function render(){
+  $('#mt').textContent=MN[M]+' '+Y;
+  C=calc();const c=C,n=new Date(Y,M+1,0).getDate();
+  $('#hero').innerHTML=`<small>Toplam kazanç (${MN[M]} hakedişi)</small><div class="big">${TRY(c.total)}</div><small>${S.base>0?'Maaş, SetCard ve harcırah dahil; ödeme tarihlerine göre aşağıda ayrıldı':'Başlamak için Ayarlar bölümüne temel ücretini ve diğer tutarları gir'}</small>`;
+  const card=(t,d,a,k)=>`<div class="st${k?' k':''}"><span>${t}</span><b>${TRY(a)}</b><small>${d}</small></div>`;
+  $('#pays').innerHTML=card('Avans',c.dA?fd(c.dA):'-',c.av)+card('Maaş',fd(c.dM),c.ma)+card('Toplam maaş','Avans + maaş',c.tot,1)+card('SetCard',fd(c.dM),c.sc)+card('Harcırah',fd(c.dH)+', avansla',c.hc);
+  $('#stats').innerHTML=[['Sayılan mesai',dur(c.otH)],['Mesai bedeli',TRY(c.ot)],['Gelinen gün',c.att],['Seyahat günü',c.trv],['Resmi tatil',c.hd+' gün'],['Saatlik ücret',TRY(c.hr)]].map(a=>`<div class="st"><span>${a[0]}</span><b>${a[1]}</b></div>`).join('');
+  let h=DN.map(x=>`<div class="dh">${x}</div>`).join('');
+  const f=info(new Date(Y,M,1)).dow;for(let i=0;i<f;i++)h+='<div class="c e"></div>';
+  const td=new Date();
+  for(let d=1;d<=n;d++){const dt=new Date(Y,M,d),i=info(dt),e=D[i.key]||{t:'n'},o=c.dd[i.key],pre=dt<SD();
+    const cls=['c',pre?'pre':'',i.kind==='h'?'h':(i.kind==='s'||i.kind==='p')?'w':'',td.getFullYear()===Y&&td.getMonth()===M&&td.getDate()===d?'t':'',sel===i.key?'s':''].join(' ');
+    const ic={i:'İzin',r:'Rapor',x:'Devamsız'}[e.t]||'';
+    h+=`<button class="${cls}" data-k="${i.key}" ${pre?'disabled':''}><span class="n">${d}${e.v?' ✈':''}</span><span>${o&&o.eff>0?`<em>+${hm(o.eff)}</em>`:''}<i>${i.hol||i.half||ic||''}</i></span></button>`}
+  $('#cal').innerHTML=h;
+  $('#cal').querySelectorAll('.c[data-k]').forEach(b=>b.onclick=()=>{sel=b.dataset.k;render();$('#day').scrollIntoView({behavior:'smooth',block:'nearest'})});
+  const rows=a=>a.filter(r=>r[1]).map(r=>`<tr><td>${r[0]}<small>${r[3]}</small></td><td class="${r[2]>0?'p':'m'}">${r[2]>0?'':'-'}${TRY(r[1])}</td></tr>`).join('');
+  $('#tb').innerHTML=`<tr class="gh"><td colspan="2">Avans, ${c.dA?fd(c.dA):'-'}</td></tr>`+rows(c.AV)+`<tr class="sub"><td>Avans toplamı</td><td>${TRY(c.av)}</td></tr>`
+   +`<tr class="gh"><td colspan="2">Maaş, ${fd(c.dM)}</td></tr>`+rows(c.MA)+`<tr class="sub"><td>Maaş toplamı</td><td>${TRY(c.ma)}</td></tr>`
+   +`<tr class="tot"><td>Toplam maaş</td><td>${TRY(c.tot)}</td></tr>`
+   +`<tr class="gh"><td colspan="2">SetCard, ${fd(c.dM)}</td></tr><tr><td>Yemek parası<small>${c.att} gün, 20:30 sonrası ek dahil</small></td><td class="p">${TRY(c.sc)}</td></tr>`
+   +`<tr class="gh"><td colspan="2">Harcırah, ${fd(c.dH)} avansıyla</td></tr><tr><td>Şehir dışı seyahat<small>${c.trv} gün x ${TRY(S.harc)}</small></td><td class="p">${TRY(c.hc)}</td></tr>`
+   +`<tr class="tot"><td>Genel toplam</td><td>${TRY(c.total)}</td></tr>`;
+  dayPanel()}
+function dayPanel(){
+  const el=$('#day');
+  if(!sel){el.innerHTML='<h2>Gün detayı</h2><p>Takvimden bir güne dokun. Çıkış saatini ya da net mesai süresini gir.</p>';return}
+  const [y,m,d]=sel.split('-').map(Number),dt=new Date(y,m-1,d),i=info(dt),e=D[sel]||{t:'n'},o=C.dd[sel]||{eff:0,note:'',pay:0,t1:0,t2:0,mul:0};
+  const lab=i.hol?i.hol+' (resmi tatil)':i.half?i.half+' (yarım gün)':i.kind==='p'?'Pazar (hafta tatili)':i.kind==='s'?'Cumartesi (tatil)':'İş günü';
+  const rate=i.kind==='w'?`Haftalık ilk ${S.lim} sa x${S.m1}, sonrası x${S.m2}`:'Katsayı x'+(i.kind==='h'?S.mHol:i.kind==='s'?S.mSat:S.mSun);
+  const md=e.m==='h'?'h':'t';
+  el.innerHTML=`<h2>${d} ${MN[m-1]} ${y}, ${DN[i.dow]}</h2><p>${lab}. ${rate}</p>
+   ${i.kind==='w'?`<div class="row"><label for="ty">Durum</label><select id="ty"><option value="n">Çalıştı</option><option value="i">Yıllık izin</option><option value="r">Raporlu</option><option value="x">Devamsız</option></select></div>`:''}
+   <div class="row"><label for="md">Giriş yöntemi</label><select id="md"><option value="t">Çıkış saati yaz</option><option value="h">Net mesai süresi yaz</option></select></div>
+   ${md==='t'?`<div class="row"><label for="ti">Giriş (boşsa ${S.arr})</label><input id="ti" type="time" value="${e.i||''}"></div><div class="row"><label for="to">Çıkış</label><input id="to" type="time" value="${e.o||''}"></div>`
+   :`<div class="row"><label for="hh">Net mesai (saat)</label><input id="hh" type="number" min="0" max="16" step="0.25" value="${e.h||''}" placeholder="15 dk hazırlık düşülmüş"></div><div class="row"><label for="m2">20:30 sonrası</label><input id="m2" type="checkbox" ${e.m2?'checked':''}> ek yemek parası</div>`}
+   <div class="row"><label for="tv">Şehir dışı seyahat</label><input id="tv" type="checkbox" ${e.v?'checked':''}> harcırah</div>
+   <div class="res">${o.note||'Mesai girilmedi'}${o.eff>0?`<br><b>Sayılan ${dur(o.eff)}, ${TRY(o.pay)}</b>${i.kind==='w'&&o.t2>0?` (${dur(o.t1)} x${S.m1} + ${dur(o.t2)} x${S.m2})`:''}`:''}</div>
+   <button class="btn" id="clr">Günü temizle</button>`;
+  const upd=p=>{const q={...(D[sel]||{t:'n'}),...p};['i','o','h','m2','v'].forEach(k=>{if(!q[k])delete q[k]});if(q.m==='t')delete q.m;
+    if(q.t==='n'&&!q.o&&!q.h&&!q.v&&!q.m)delete D[sel];else D[sel]=q;save();render()};
+  const ty=$('#ty');if(ty){ty.value=e.t;ty.onchange=()=>upd({t:ty.value})}
+  $('#md').value=md;$('#md').onchange=ev=>upd({m:ev.target.value});
+  if(md==='t'){$('#ti').onchange=ev=>upd({i:ev.target.value});$('#to').onchange=ev=>upd({o:ev.target.value})}
+  else{$('#hh').onchange=ev=>upd({h:Math.max(0,Math.min(16,+ev.target.value||0))});$('#m2').onchange=ev=>upd({m2:ev.target.checked?1:0})}
+  $('#tv').onchange=ev=>upd({v:ev.target.checked?1:0});
+  $('#clr').onclick=()=>{delete D[sel];save();render()}}
+$('#pv').onclick=()=>{M--;if(M<0){M=11;Y--}sel=null;render()};
+$('#nx').onclick=()=>{M++;if(M>11){M=0;Y++}sel=null;render()};
+$('#fs').innerHTML='<div><label for="f_start">İşe başlangıç tarihi</label><input id="f_start" type="date" value="'+S.start+'"></div><div><label for="f_fp">Bu ay benzin TL/lt (önceki ayın 25\'i, İstanbul)</label><input id="f_fp" type="number" step="0.01"></div>'
+ +FLD.map(f=>`<div><label for="f_${f[0]}">${f[1]}</label><input id="f_${f[0]}" type="${f[2]||'number'}" ${f[2]?'':'step="any"'} value="${S[f[0]]}"></div>`).join('');
+$('#f_start').onchange=ev=>{S.start=ev.target.value||DEF.start;save();render()};
+$('#f_fp').onchange=ev=>{const v=parseFloat(ev.target.value);if(isNaN(v))delete S.fp[ym()];else S.fp[ym()]=v;save();render()};
+FLD.forEach(f=>$('#f_'+f[0]).onchange=ev=>{if(f[2]){S[f[0]]=ev.target.value||DEF[f[0]]}else{const v=parseFloat(ev.target.value);S[f[0]]=isNaN(v)?DEF[f[0]]:v}save();render()});
+const _r=render;render=function(){_r();const x=$('#f_fp');if(x&&document.activeElement!==x)x.value=pr()};
+render();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
