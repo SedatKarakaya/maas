@@ -91,8 +91,8 @@ details summary{cursor:pointer;font-weight:800;font-size:16px}
     </div>
     <div style="display:grid;gap:14px">
       <section class="g"><h2>Bordro dökümü</h2><table id="tb"></table></section>
-      <section class="g"><details><summary>Ayarlar ve tutarlar</summary><div class="fs" id="fs"></div>
-        <p class="note">Mesai kuralı: Hafta içi normal bitiş = giriş + 9 saat (en erken 16:00). Aşan süreden önce 15 dk hazırlık düşülür; kalan 30 dk altındaysa sayılmaz. Haftalık ilk 5 saat x1,25, sonrası x1,50 (kat sayıları). Cumartesi bağımsız x1,50. Pazar ve resmi tatil katsayıları varsayımdır. Saatlik ücret böleni 40 saatlik hafta için 200 alındı; İK'dan teyit et. Benzin fiyatı otomatik çekilemez, önceki ayın 25'i Opet İstanbul fiyatını elle gir.</p></details></section>
+      <section class="g"><details><summary>Ayarlar ve tutarlar</summary><div class="fs" id="fs"></div><div id="rz" style="margin-top:18px"></div>
+        <p class="note">Mesai kuralı: Hafta içi normal bitiş = giriş + 9 saat (en erken 16:00). Aşan süreden 15 dk hazırlık düşülür; çıkış 20:00'dan sonraysa (20:01 ve sonrası) ayrıca 30 dk yasal dinlenme düşülür; 20:00 dahil öncesinde düşülmez. Kalan 30 dk altındaysa sayılmaz. Haftalık ilk 5 saat x1,25, sonrası x1,50 (kat sayıları). Cumartesi bağımsız x1,50. Pazar ve resmi tatil katsayıları varsayımdır. Saatlik ücret böleni 40 saatlik hafta için 200 alındı; İK'dan teyit et. Benzin fiyatı otomatik çekilemez, önceki ayın 25'i Opet İstanbul fiyatını elle gir.</p></details></section>
     </div>
   </div>
 </main>
@@ -105,8 +105,8 @@ const HF={'01-01':'Yılbaşı','04-23':'23 Nisan','05-01':'1 Mayıs','05-19':'19
 const RB={2026:{'03-20':'Ramazan B.','03-21':'Ramazan B.','03-22':'Ramazan B.','05-27':'Kurban B.','05-28':'Kurban B.','05-29':'Kurban B.','05-30':'Kurban B.'},2027:{'03-09':'Ramazan B.','03-10':'Ramazan B.','03-11':'Ramazan B.','05-16':'Kurban B.','05-17':'Kurban B.','05-18':'Kurban B.','05-19':'Kurban B.'}};
 const AR={2026:{'03-19':'Arife','05-26':'Arife'},2027:{'03-08':'Arife','05-15':'Arife'}};
 const PRICES={'2026-10':80.4,'2026-11':76.3};
-const DEF={base:0,sey:0,tek:0,kid:0,egt:0,kp:0,start:'',tekIk:1,pay:200,m1:1.25,lim:5,m2:1.5,mSat:1.5,mSun:1.5,mHol:2,prep:15,minM:30,arr:'08:00',yem:0,yem2:0,fl:0,fd:22,seyY:0,fpDef:76.3,harc:0,en:0,enr:0,oth:0,ded:0,otTax:0,fp:{}};
-const FLD=[['base','Aylık temel net ücret'],['sey','Seyyanen net'],['seyY','Seyyanen son yıl (0: süresiz)'],['tek','Sabit yan hak (aylık)'],['kid','Kıdem yılı (en fazla 10)'],['kp','Kıdem oranı % (yıl başına)'],['egt','Eğitim tazminatı %'],['tekIk','Yan hak ikramiye aylarında da (1/0)'],['pay','Saatlik ücret böleni'],['m1','Fazla süreli katsayı (ilk kademe)'],['lim','İlk kademe haftalık sınır (saat)'],['m2','Fazla çalışma katsayısı'],['mSat','Cumartesi katsayısı'],['mSun','Pazar katsayısı'],['mHol','Resmi tatil katsayısı'],['prep','Hazırlık süresi (dk)'],['minM','Asgari sayılan mesai (dk)'],['arr','Varsayılan giriş saati','time'],['yem','SetCard yemek parası (gün)'],['yem2','20:30 sonrası ek yemek'],['fl','Aylık yakıt hakkı (lt)'],['fd','Yakıt gün böleni'],['fpDef','Varsayılan benzin TL/lt'],['harc','Harcırah (gün)'],['en','Saat bazlı ek ödeme (saat)'],['enr','Saat bazlı ek ödeme saat ücreti'],['oth','Diğer ek ödeme (avans)'],['ded','Diğer kesinti (avans)'],['otTax','Fazla mesai kesinti %']];
+const DEF={base:0,sey:0,tek:0,kid:0,egt:0,kp:0,start:'',tekIk:1,pay:200,m1:1.25,lim:5,m2:1.5,mSat:1.5,mSun:1.5,mHol:2,prep:15,minM:30,arr:'08:00',yem:0,yem2:0,fl:0,fd:22,seyY:0,rs:'20:00',rm:30,raises:[],fpDef:76.3,harc:0,en:0,enr:0,oth:0,ded:0,otTax:0,fp:{}};
+const FLD=[['base','Aylık temel net ücret (zamsız başlangıç)'],['sey','Seyyanen net'],['seyY','Seyyanen son yıl (0: süresiz)'],['tek','Sabit yan hak (aylık)'],['kid','Kıdem yılı (en fazla 10)'],['kp','Kıdem oranı % (yıl başına)'],['egt','Eğitim tazminatı %'],['tekIk','Yan hak ikramiye aylarında da (1/0)'],['pay','Saatlik ücret böleni'],['m1','Fazla süreli katsayı (ilk kademe)'],['lim','İlk kademe haftalık sınır (saat)'],['m2','Fazla çalışma katsayısı'],['mSat','Cumartesi katsayısı'],['mSun','Pazar katsayısı'],['mHol','Resmi tatil katsayısı'],['prep','Hazırlık süresi (dk)'],['minM','Asgari sayılan mesai (dk)'],['arr','Varsayılan giriş saati','time'],['rs','Dinlenme düşümü eşiği (bu saatten sonra çıkışta)','time'],['rm','Dinlenme düşümü (dk)'],['yem','SetCard yemek parası (gün)'],['yem2','20:30 sonrası ek yemek'],['fl','Aylık yakıt hakkı (lt)'],['fd','Yakıt gün böleni'],['fpDef','Varsayılan benzin TL/lt'],['harc','Harcırah (gün)'],['en','Saat bazlı ek ödeme (saat)'],['enr','Saat bazlı ek ödeme saat ücreti'],['oth','Diğer ek ödeme (avans)'],['ded','Diğer kesinti (avans)'],['otTax','Fazla mesai kesinti %']];
 let S={...DEF},D={},Y,M,sel=null,C=null;
 try{const r=JSON.parse(localStorage.getItem('maas.v2')||'{}');if(r.s)S={...DEF,...r.s};if(r.d)D=r.d}catch(e){}
 const save=()=>{try{localStorage.setItem('maas.v2',JSON.stringify({s:S,d:D}))}catch(e){}};
@@ -114,6 +114,8 @@ const pad=n=>String(n).padStart(2,'0');
 const SD=()=>S.start?new Date(S.start+'T00:00:00'):new Date(0);
 const now=new Date();Y=now.getFullYear();M=now.getMonth();if(now<SD()){Y=SD().getFullYear();M=SD().getMonth()}
 const ym=()=>Y+'-'+pad(M+1);
+const baseAt=k=>{let b=S.base;(S.raises||[]).slice().sort((a,c)=>a.m<c.m?-1:1).forEach(r=>{if(r.m<=k)b=r.b});return b};
+const baseFor=()=>baseAt(ym());
 const pr=()=>S.fp[ym()]??PRICES[ym()]??S.fpDef;
 const tm=s=>{const a=(s||'').split(':');return a.length<2||a[0]===''?null:+a[0]+a[1]/60};
 const hm=x=>{const m=Math.round(x*60);return pad(Math.floor(m/60))+':'+pad(m%60)};
@@ -126,17 +128,17 @@ function lwd(y,m){let d=new Date(y,m+1,0);for(;;){const i=info(d);if(i.dow<5&&!i
 function ovt(e,i){
   if(i.kind==='w'&&e.t!=='n')return{eff:0,note:'',m2:0};
   const P=S.prep/60;let eff=0,note='',m2=0;
-  if(e.m==='h'){eff=+e.h||0;if(eff>0)note='Net '+dur(eff)+' (15 dk hazırlık düşülmüş sayıldı)';m2=e.m2?1:0}
+  if(e.m==='h'){eff=+e.h||0;if(eff>0)note='Net '+dur(eff)+' (hazırlık ve dinlenme düşülmüş sayıldı)';m2=e.m2?1:0}
   else{const oo=tm(e.o);if(oo===null)return{eff:0,note:'',m2:0};
     const ii=tm(e.i)??tm(S.arr),be=i.kind==='w'?Math.max(ii+9,16):ii,raw=oo-be;
     if(raw<=0)return{eff:0,note:i.kind==='w'?'Normal bitiş '+hm(be)+', fazla süre yok':'',m2:0};
-    eff=raw-P;m2=oo>=20.5?1:0;
-    note=(i.kind==='w'?'Normal bitiş '+hm(be)+', ham '+dur(raw):'Ham '+dur(raw))+', hazırlık -'+S.prep+' dk, kalan '+dur(Math.max(eff,0))}
+    const rest=oo>(tm(S.rs)??20)+1e-9?S.rm/60:0;eff=raw-P-rest;m2=oo>=20.5?1:0;
+    note=(i.kind==='w'?'Normal bitiş '+hm(be)+', ham '+dur(raw):'Ham '+dur(raw))+', hazırlık -'+S.prep+' dk'+(rest>0?', dinlenme -'+Math.round(rest*60)+' dk':'')+', kalan '+dur(Math.max(eff,0))}
   if(eff>0&&eff<S.minM/60-1e-9){note+=', '+S.minM+' dk altı sayılmadı';eff=0}
   if(eff<0)eff=0;
   return{eff,note,m2}}
 function calc(){
-  const n=new Date(Y,M+1,0).getDate(),hr=S.base/S.pay,sd=SD(),ms=new Date(Y,M,1),me=new Date(Y,M,n),r=me<sd?0:sd<=ms?1:Math.min(1,(n-sd.getDate()+1)/30);
+  const n=new Date(Y,M+1,0).getDate(),B=baseFor(),hr=B/S.pay,sd=SD(),ms=new Date(Y,M,1),me=new Date(Y,M,n),r=me<sd?0:sd<=ms?1:Math.min(1,(n-sd.getDate()+1)/30);
   const dd={};let otH=0,ot=0,mealT=0,att=0,trv=0,ab=0,hd=0,cnt=0;
   for(let d=1-info(ms).dow;d<=n;d++){
     const dt=new Date(Y,M,d),i=info(dt);if(i.dow===0)cnt=0;if(dt<sd)continue;
@@ -152,11 +154,11 @@ function calc(){
     otH+=o.eff;ot+=pay;dd[i.key]={...o,pay,t1,t2,mul}}
   const ik=[2,5,8,11].includes(M),qf=new Date(Math.max(sd,new Date(Y,M-2,1))),ikr=r?Math.min(1,(Math.round((me-qf)/864e5)+1)/90):0,sey=S.seyY&&Y>S.seyY?0:S.sey;
   const lt=Math.min(S.fl,att*S.fl/S.fd),price=pr(),fuel=lt*price,otNet=ot*(1-S.otTax/100);
-  const AV=[['Temel net ücret',S.base*r,1,r<1?Math.round(r*30)+'/30 gün':''],['Seyyanen ödeme',sey*r,1,''],
+  const AV=[['Temel net ücret',B*r,1,r<1?Math.round(r*30)+'/30 gün':''],['Seyyanen ödeme',sey*r,1,''],
    ['Sabit yan hak',S.tek*r+(ik&&S.tekIk?S.tek*ikr:0),1,ik&&S.tekIk?'İkramiye ayı ek payı dahil':''],
-   ['Eğitim tazminatı',S.base*r*S.egt/100,1,'%'+S.egt],['Kıdem ücreti',S.base*r*(S.kp/100)*Math.min(S.kid,10),1,S.kid+' yıl x %'+S.kp],
-   ['İkramiye',ik?S.base*ikr:0,1,ik?Math.round(ikr*90)+'/90 gün':''],['Diğer ek ödeme',S.oth,1,''],
-   ['Devamsızlık kesintisi',S.base/30*ab,-1,ab+' gün'],['Diğer kesinti',S.ded,-1,'']];
+   ['Eğitim tazminatı',B*r*S.egt/100,1,'%'+S.egt],['Kıdem ücreti',B*r*(S.kp/100)*Math.min(S.kid,10),1,S.kid+' yıl x %'+S.kp],
+   ['İkramiye',ik?B*ikr:0,1,ik?Math.round(ikr*90)+'/90 gün':''],['Diğer ek ödeme',S.oth,1,''],
+   ['Devamsızlık kesintisi',B/30*ab,-1,ab+' gün'],['Diğer kesinti',S.ded,-1,'']];
   const MA=[['Fazla mesai',otNet,1,dur(otH)+' sayılan'],['Yol parası (benzin)',fuel,1,lt.toFixed(1)+' lt x '+TRY(price)],['Saat bazlı ek ödeme',S.en*S.enr,1,S.en+' saat']];
   const sm=a=>a.reduce((x,q)=>x+q[1]*q[2],0),av=sm(AV),ma=sm(MA),hc=trv*S.harc;
   return{dd,AV,MA,av,ma,sc:mealT,hc,tot:av+ma,total:av+ma+mealT+hc,otH,att,trv,hd,hr,ot:otNet,
@@ -164,7 +166,7 @@ function calc(){
 function render(){
   $('#mt').textContent=MN[M]+' '+Y;
   C=calc();const c=C,n=new Date(Y,M+1,0).getDate();
-  $('#hero').innerHTML=`<small>Toplam kazanç (${MN[M]} hakedişi)</small><div class="big">${TRY(c.total)}</div><small>${S.base>0?'Maaş, SetCard ve harcırah dahil; ödeme tarihlerine göre aşağıda ayrıldı':'Başlamak için Ayarlar bölümüne temel ücretini ve diğer tutarları gir'}</small>`;
+  $('#hero').innerHTML=`<small>Toplam kazanç (${MN[M]} hakedişi)</small><div class="big">${TRY(c.total)}</div><small>${baseFor()>0?'Maaş, SetCard ve harcırah dahil; ödeme tarihlerine göre aşağıda ayrıldı':'Başlamak için Ayarlar bölümüne temel ücretini ve diğer tutarları gir'}</small>`;
   const card=(t,d,a,k)=>`<div class="st${k?' k':''}"><span>${t}</span><b>${TRY(a)}</b><small>${d}</small></div>`;
   $('#pays').innerHTML=card('Avans',c.dA?fd(c.dA):'-',c.av)+card('Maaş',fd(c.dM),c.ma)+card('Toplam maaş','Avans + maaş',c.tot,1)+card('SetCard',fd(c.dM),c.sc)+card('Harcırah',fd(c.dH)+', avansla',c.hc);
   $('#stats').innerHTML=[['Sayılan mesai',dur(c.otH)],['Mesai bedeli',TRY(c.ot)],['Gelinen gün',c.att],['Seyahat günü',c.trv],['Resmi tatil',c.hd+' gün'],['Saatlik ücret',TRY(c.hr)]].map(a=>`<div class="st"><span>${a[0]}</span><b>${a[1]}</b></div>`).join('');
@@ -196,7 +198,7 @@ function dayPanel(){
    ${i.kind==='w'?`<div class="row"><label for="ty">Durum</label><select id="ty"><option value="n">Çalıştı</option><option value="i">Yıllık izin</option><option value="r">Raporlu</option><option value="x">Devamsız</option></select></div>`:''}
    <div class="row"><label for="md">Giriş yöntemi</label><select id="md"><option value="t">Çıkış saati yaz</option><option value="h">Net mesai süresi yaz</option></select></div>
    ${md==='t'?`<div class="row"><label for="ti">Giriş (boşsa ${S.arr})</label><input id="ti" type="time" value="${e.i||''}"></div><div class="row"><label for="to">Çıkış</label><input id="to" type="time" value="${e.o||''}"></div>`
-   :`<div class="row"><label for="hh">Net mesai (saat)</label><input id="hh" type="number" min="0" max="16" step="0.25" value="${e.h||''}" placeholder="15 dk hazırlık düşülmüş"></div><div class="row"><label for="m2">20:30 sonrası</label><input id="m2" type="checkbox" ${e.m2?'checked':''}> ek yemek parası</div>`}
+   :`<div class="row"><label for="hh">Net mesai (saat)</label><input id="hh" type="number" min="0" max="16" step="0.25" value="${e.h||''}" placeholder="hazırlık ve dinlenme düşülmüş"></div><div class="row"><label for="m2">20:30 sonrası</label><input id="m2" type="checkbox" ${e.m2?'checked':''}> ek yemek parası</div>`}
    <div class="row"><label for="tv">Şehir dışı seyahat</label><input id="tv" type="checkbox" ${e.v?'checked':''}> harcırah</div>
    <div class="res">${o.note||'Mesai girilmedi'}${o.eff>0?`<br><b>Sayılan ${dur(o.eff)}, ${TRY(o.pay)}</b>${i.kind==='w'&&o.t2>0?` (${dur(o.t1)} x${S.m1} + ${dur(o.t2)} x${S.m2})`:''}`:''}</div>
    <button class="btn" id="clr">Günü temizle</button>`;
@@ -215,9 +217,15 @@ $('#fs').innerHTML='<div><label for="f_start">İşe başlangıç tarihi</label><
 $('#f_start').onchange=ev=>{S.start=ev.target.value||DEF.start;save();render()};
 $('#f_fp').onchange=ev=>{const v=parseFloat(ev.target.value);if(isNaN(v))delete S.fp[ym()];else S.fp[ym()]=v;save();render()};
 FLD.forEach(f=>$('#f_'+f[0]).onchange=ev=>{if(f[2]){S[f[0]]=ev.target.value||DEF[f[0]]}else{const v=parseFloat(ev.target.value);S[f[0]]=isNaN(v)?DEF[f[0]]:v}save();render()});
-const _r=render;render=function(){_r();const x=$('#f_fp');if(x&&document.activeElement!==x)x.value=pr()};
+function rzRender(){const L=(S.raises||[]).slice().sort((a,c)=>a.m<c.m?-1:1);
+  $('#rz').innerHTML='<h2>Zam</h2><div class="fs"><div><label for="rzm">Geçerli ay</label><input id="rzm" type="month" value="'+ym()+'"></div><div><label for="rzb">Yeni net temel ücret</label><input id="rzb" type="number" step="any"></div><div><label for="rzp">ya da zam oranı %</label><input id="rzp" type="number" step="any"></div><div style="display:flex;align-items:end"><button class="btn" id="rza">Zamı ekle</button></div></div><div id="rzl" style="margin-top:10px">'+(L.length?L.map(r=>`<div class="row"><span style="flex:1">${r.m} ayından itibaren ${TRY(r.b)}</span><button class="btn" data-r="${r.m}">Sil</button></div>`).join(''):'<p class="note">Kayıtlı zam yok.</p>')+'</div>';
+  $('#rza').onclick=()=>{const m=$('#rzm').value,nb=parseFloat($('#rzb').value),p=parseFloat($('#rzp').value);let b=nb;if(!(b>0)&&p>0)b=baseAt(m)*(1+p/100);if(!m||!(b>0))return;
+    S.raises=(S.raises||[]).filter(r=>r.m!==m);S.raises.push({m:m,b:Math.round(b*100)/100});save();rzRender();render()};
+  $('#rzl').querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{S.raises=(S.raises||[]).filter(r=>r.m!==b.dataset.r);save();rzRender();render()})}
+let lastYm='';const _r=render;render=function(){_r();const x=$('#f_fp');if(x&&document.activeElement!==x)x.value=pr();if(lastYm!==ym()){lastYm=ym();rzRender()}};
 render();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
-</body><script src="guvenlik.js"></script>
+<script src="guvenlik.js"></script>
+</body>
 </html>
