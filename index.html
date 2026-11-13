@@ -154,22 +154,23 @@ function calc(){
     otH+=o.eff;ot+=pay;dd[i.key]={...o,pay,t1,t2,mul}}
   const ik=[2,5,8,11].includes(M),qf=new Date(Math.max(sd,new Date(Y,M-2,1))),ikr=r?Math.min(1,(Math.round((me-qf)/864e5)+1)/90):0,sey=S.seyY&&Y>S.seyY?0:S.sey;
   const lt=Math.min(S.fl,att*S.fl/S.fd),price=pr(),fuel=lt*price,otNet=ot*(1-S.otTax/100);
+  const pn=new Date(Y,M,0).getDate();let ptrv=0;for(let d=1;d<=pn;d++){const pd=new Date(Y,M-1,d);if(pd>=sd&&(D[info(pd).key]||{}).v)ptrv++}const hc=ptrv*S.harc;
   const AV=[['Temel net ücret',B*r,1,r<1?Math.round(r*30)+'/30 gün':''],['Seyyanen ödeme',sey*r,1,''],
    ['Sabit yan hak',S.tek*r+(ik&&S.tekIk?S.tek*ikr:0),1,ik&&S.tekIk?'İkramiye ayı ek payı dahil':''],
    ['Eğitim tazminatı',B*r*S.egt/100,1,'%'+S.egt],['Kıdem ücreti',B*r*(S.kp/100)*Math.min(S.kid,10),1,S.kid+' yıl x %'+S.kp],
-   ['İkramiye',ik?B*ikr:0,1,ik?Math.round(ikr*90)+'/90 gün':''],['Diğer ek ödeme',S.oth,1,''],
+   ['İkramiye',ik?B*ikr:0,1,ik?Math.round(ikr*90)+'/90 gün':''],['Harcırah ('+MN[(M+11)%12]+' seyahati)',hc,1,ptrv+' gün x '+TRY(S.harc)],['Diğer ek ödeme',S.oth,1,''],
    ['Devamsızlık kesintisi',B/30*ab,-1,ab+' gün'],['Diğer kesinti',S.ded,-1,'']];
   const MA=[['Fazla mesai',otNet,1,dur(otH)+' sayılan'],['Yol parası (benzin)',fuel,1,lt.toFixed(1)+' lt x '+TRY(price)],['Saat bazlı ek ödeme',S.en*S.enr,1,S.en+' saat']];
-  const sm=a=>a.reduce((x,q)=>x+q[1]*q[2],0),av=sm(AV),ma=sm(MA),hc=trv*S.harc;
-  return{dd,AV,MA,av,ma,sc:mealT,hc,tot:av+ma,total:av+ma+mealT+hc,otH,att,trv,hd,hr,ot:otNet,
+  const sm=a=>a.reduce((x,q)=>x+q[1]*q[2],0),av=sm(AV),ma=sm(MA);
+  return{dd,AV,MA,av,ma,sc:mealT,hc,tot:av+ma,total:av+ma+mealT,otH,att,trv,hd,hr,ot:otNet,
    dA:r?lwd(Y,M):null,dM:new Date(Y,M+1,15),dH:lwd(Y,M+1)}}
 function render(){
   $('#mt').textContent=MN[M]+' '+Y;
   C=calc();const c=C,n=new Date(Y,M+1,0).getDate();
   $('#hero').innerHTML=`<small>Toplam kazanç (${MN[M]} hakedişi)</small><div class="big">${TRY(c.total)}</div><small>${baseFor()>0?'Maaş, SetCard ve harcırah dahil; ödeme tarihlerine göre aşağıda ayrıldı':'Başlamak için Ayarlar bölümüne temel ücretini ve diğer tutarları gir'}</small>`;
   const card=(t,d,a,k)=>`<div class="st${k?' k':''}"><span>${t}</span><b>${TRY(a)}</b><small>${d}</small></div>`;
-  $('#pays').innerHTML=card('Avans',c.dA?fd(c.dA):'-',c.av)+card('Maaş',fd(c.dM),c.ma)+card('Toplam maaş','Avans + maaş',c.tot,1)+card('SetCard',fd(c.dM),c.sc)+card('Harcırah',fd(c.dH)+', avansla',c.hc);
-  $('#stats').innerHTML=[['Sayılan mesai',dur(c.otH)],['Mesai bedeli',TRY(c.ot)],['Gelinen gün',c.att],['Seyahat günü',c.trv],['Resmi tatil',c.hd+' gün'],['Saatlik ücret',TRY(c.hr)]].map(a=>`<div class="st"><span>${a[0]}</span><b>${a[1]}</b></div>`).join('');
+  $('#pays').innerHTML=card('Avans',c.dA?fd(c.dA):'-',c.av)+card('Maaş',fd(c.dM),c.ma)+card('Toplam maaş','Avans + maaş',c.tot,1)+card('SetCard',fd(c.dM),c.sc)+card('Harcırah',(c.dA?fd(c.dA):'-')+', avansa dahil',c.hc);
+  $('#stats').innerHTML=[['Sayılan mesai',dur(c.otH)],['Mesai bedeli',TRY(c.ot)],['Gelinen gün',c.att],['Seyahat günü',c.trv,'harcırah '+MN[(M+1)%12]+' avansında'],['Resmi tatil',c.hd+' gün'],['Saatlik ücret',TRY(c.hr)]].map(a=>`<div class="st"><span>${a[0]}</span><b>${a[1]}</b>${a[2]?`<small>${a[2]}</small>`:''}</div>`).join('');
   let h=DN.map(x=>`<div class="dh">${x}</div>`).join('');
   const f=info(new Date(Y,M,1)).dow;for(let i=0;i<f;i++)h+='<div class="c e"></div>';
   const td=new Date();
@@ -184,7 +185,6 @@ function render(){
    +`<tr class="gh"><td colspan="2">Maaş, ${fd(c.dM)}</td></tr>`+rows(c.MA)+`<tr class="sub"><td>Maaş toplamı</td><td>${TRY(c.ma)}</td></tr>`
    +`<tr class="tot"><td>Toplam maaş</td><td>${TRY(c.tot)}</td></tr>`
    +`<tr class="gh"><td colspan="2">SetCard, ${fd(c.dM)}</td></tr><tr><td>Yemek parası<small>${c.att} gün, 20:30 sonrası ek dahil</small></td><td class="p">${TRY(c.sc)}</td></tr>`
-   +`<tr class="gh"><td colspan="2">Harcırah, ${fd(c.dH)} avansıyla</td></tr><tr><td>Şehir dışı seyahat<small>${c.trv} gün x ${TRY(S.harc)}</small></td><td class="p">${TRY(c.hc)}</td></tr>`
    +`<tr class="tot"><td>Genel toplam</td><td>${TRY(c.total)}</td></tr>`;
   dayPanel()}
 function dayPanel(){
@@ -199,7 +199,7 @@ function dayPanel(){
    <div class="row"><label for="md">Giriş yöntemi</label><select id="md"><option value="t">Çıkış saati yaz</option><option value="h">Net mesai süresi yaz</option></select></div>
    ${md==='t'?`<div class="row"><label for="ti">Giriş (boşsa ${S.arr})</label><input id="ti" type="time" value="${e.i||''}"></div><div class="row"><label for="to">Çıkış</label><input id="to" type="time" value="${e.o||''}"></div>`
    :`<div class="row"><label for="hh">Net mesai (saat)</label><input id="hh" type="number" min="0" max="16" step="0.25" value="${e.h||''}" placeholder="hazırlık ve dinlenme düşülmüş"></div><div class="row"><label for="m2">20:30 sonrası</label><input id="m2" type="checkbox" ${e.m2?'checked':''}> ek yemek parası</div>`}
-   <div class="row"><label for="tv">Şehir dışı seyahat</label><input id="tv" type="checkbox" ${e.v?'checked':''}> harcırah</div>
+   <div class="row"><label for="tv">Şehir dışı seyahat</label><input id="tv" type="checkbox" ${e.v?'checked':''}> harcırah (sonraki ay avansında)</div>
    <div class="res">${o.note||'Mesai girilmedi'}${o.eff>0?`<br><b>Sayılan ${dur(o.eff)}, ${TRY(o.pay)}</b>${i.kind==='w'&&o.t2>0?` (${dur(o.t1)} x${S.m1} + ${dur(o.t2)} x${S.m2})`:''}`:''}</div>
    <button class="btn" id="clr">Günü temizle</button>`;
   const upd=p=>{const q={...(D[sel]||{t:'n'}),...p};['i','o','h','m2','v'].forEach(k=>{if(!q[k])delete q[k]});if(q.m==='t')delete q.m;
